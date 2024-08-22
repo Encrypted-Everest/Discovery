@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SR Streaming - Live TV Channel</title>
+    <link rel="icon" width="480" height="480" type="image/x-icon" href="https://img.icons8.com/doodle/192/charles-montgomery-burns.png">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: #1a1a1a;
+            color: #fff;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        nav {
+            display: flex;
+            margin: 12px;
+            align-items: center;
+        }
+
+        nav a {
+            color: #ffd700;
+            /* Gold color for links */
+            text-decoration: none;
+            margin: 0 15px;
+            position: relative;
+        }
+
+        nav a::after {
+            content: '';
+            display: block;
+            width: 0;
+            height: 2px;
+            background: #ffd700;
+            /* Gold color for underline */
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            transition: width .3s;
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        .container {
+            margin-top: 70px;
+            padding: 20px;
+        }
+
+        .container {
+            flex: 1;
+        }
+
+        .post {
+            position: relative;
+            background-color: #333;
+            /* Dark background for contrast */
+            color: #fff;
+            width: 200px;
+            /* Fixed size of the post */
+            height: 200px;
+            /* Fixed size of the post */
+            margin: 10px;
+            border-radius: 8px;
+            /* Rounded corners */
+            text-align: center;
+            cursor: pointer;
+            overflow: hidden;
+            /* Ensure content does not spill out */
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            /* Subtle shadow for depth */
+        }
+
+        .post:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            /* Enhanced shadow on hover */
+        }
+
+        .post img {
+            width: 120px;
+            /* Initial size of the circular image */
+            height: 120px;
+            /* Maintain aspect ratio */
+            border-radius: 50%;
+            /* Make the image circular */
+            object-fit: cover;
+            /* Ensure the image covers the circular area */
+            transition: all 0.3s ease-in-out;
+            /* Smooth transition for hover effect */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            /* Center the image */
+            z-index: 1;
+            /* Ensure the image is above the background */
+        }
+
+        .post:hover img {
+            width: 100%;
+            height: 100%;
+            border-radius: 0;
+            /* Remove circular border-radius on hover */
+            position: absolute;
+            /* Ensure the image covers the entire post area */
+            top: 0;
+            left: 0;
+            transform: none;
+            /* Remove centering transform on hover */
+            z-index: -1;
+            /* Send the image behind the content on hover */
+        }
+
+        .post-content {
+            position: relative;
+            z-index: 2;
+            /* Ensure text is above the image */
+            padding-top: 140px;
+            /* Space between image and title */
+        }
+
+        .post p {
+            margin: 0;
+            font-size: 16px;
+            /* Font size for the title */
+            font-weight: 600;
+            /* Bold text for emphasis */
+            /* position:top; */
+        }
+
+
+
+
+
+
+
+        .grid-container {
+            display: grid;
+            gap: 10px;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            /* Responsive column count */
+        }
+
+        @media (max-width: 1200px) {
+            .grid-container {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .grid-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .grid-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Style for the popup content */
+        .popup-content {
+            background: #1a1a1a;
+            /* Darker background for better contrast */
+            padding: 20px;
+            border-radius: 10px;
+            position: relative;
+            width: 90%;
+            max-width: 800px;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Style for the video element */
+        .popup-content video {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            border: 2px solid #ffd700;
+            /* Gold border */
+        }
+
+        /* Style for the close button */
+        .popup-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 28px;
+            /* Bigger size */
+            cursor: pointer;
+            color: #ffd700;
+            /* Gold color */
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .popup-close:hover {
+            transform: scale(1.2);
+            /* Slightly enlarges on hover */
+        }
+
+        /* Smooth animation for the popup */
+        @keyframes popup-appear {
+            from {
+                opacity: 0;
+                transform: scale(0.7);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .popup-content {
+            animation: popup-appear 0.3s ease;
+        }
+
+
+
+
+        footer {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: -1px;
+            width: 100%;
+            bottom: 0;
+
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+        }
+
+        .popup-content {
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+            overflow: hidden;
+            /* Ensure content stays within bounds */
+        }
+
+        .popup-content video {
+            width: 100%;
+            height: auto;
+            max-height: 80vh;
+            /* Adjust video height relative to viewport */
+        }
+
+
+
+        .popup-close {
+            position: absolute;
+            top: 8px;
+            right: -8px;
+            font-size: 42px;
+            /* Increased font size */
+            cursor: pointer;
+            color: #000;
+            padding: 5px;
+            /* Add padding for better click area */
+        }
+
+        x .search-input {
+            background: #EEEEEE;
+            color: #212121;
+            vertical-align: middle;
+            font-size: 14px;
+            line-height: 1.5;
+            padding: 8px 12px;
+            border: 0;
+            outline: none;
+            box-shadow: inset 0 -1px 1px -1px #CCCCCC, inset 0 1px 1px -1px #CCCCCC, inset 1px 0 1px -1px #CCCCCC;
+        }
+
+
+
+        .search-submit {
+            background: #D500F9;
+            color: #FFFFFF;
+            vertical-align: middle;
+            padding: 8px 12px;
+            border: 0;
+            outline: none;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+
+        .search-submit:hover {
+            background: #AB47BC;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="logo">SR Streams</div>
+        <nav>
+            <a href="#">Home</a>
+            <a href="#">Contact</a>
+            <a href="#">DMCA</a>
+            <a href="#">Privacy Policy</a>
+            <form role="search" method="get" action="">
+                <!-- <div class="input-container">
+                    <input type="search" class="search-input" value="" name="s"
+                        placeholder="Search entire website..." />
+                    <button type="submit" class="search-submit">Search</button>
+                </div> -->
+            </form>
+        </nav>
+    </header>
+    <div class="container">
+        <div class="grid-container">
+            <!-- Repeat this block for each post -->
+            <div class="post" onclick="openPopup('./Animal_planet_hindi_HD.m3u8')">
+                <img src="https://i.vimeocdn.com/video/743208338-0c9bce18370b30386d37e406ac3e949b2e09db1200832d0cd68a6ac2ed849648-d_750x421.875?q=60"
+                    alt="TV Channel Logo">
+                <div class="post-content">
+                    <p>Animal planet HD</p>
+                </div>
+            </div>
+
+            <div class="post" onclick="openPopup('./Discovery_Kids.m3u8')">
+                <img src="https://i.ytimg.com/vi/1xVeNHWiv1M/maxresdefault.jpg?sqp=-oaymwEmCIAKENAF8quKqQMa8AEB-AH-CYAC0AWKAgwIABABGBUgWyhyMA8=&rs=AOn4CLCUjQjAzBr7ZYBKv0EQ09nRkBDsxg"
+                    alt="TV Channel Logo">
+                <div class="post-content">
+                    <p>Discovery Kids</p>
+                </div>
+            </div>
+            <div class="post" onclick="openPopup('./discovery sci hindi.m3u8 ')">
+                <img src="https://www.brandemia.org/wp-content/uploads/2011/04/Imagen-10.png" alt="TV Channel Logo">
+                <div class="post-content">
+                    <p>Discovery sci Hindi</p>
+                </div>
+            </div>
+            <div class="post" onclick="openPopup('./Discovery_turbo.m3u8')">
+                <img src="https://teleguiado.com/wp-content/uploads/2022/08/DISCOVERY-TURBO.png" alt="TV Channel Logo">
+                <div class="post-content">
+                    <p>Discovery turbo</p>
+                </div>
+            </div>
+            <div class="post" onclick="openPopup('./DiscoveryHD.m3u8')">
+                <img src="https://content.osn.com/bob/745x419/DSC.jpg" alt="TV Channel Logo">
+                <div class="post-content">
+                    <p>Discovery HD</p>
+                </div>
+            </div>
+            <div class="post" onclick="openPopup('./discoveryID_hindi_HD.m3u8')">
+                <img src="https://tvseriesfinale.com/wp-content/uploads/2015/11/ID-logo-blue.jpeg"
+                    alt="TV Channel Logo">
+                <div class="post-content">
+                    <p>Discovery ID Hindi</p>
+                </div>
+            </div>
+            <div class="post" onclick="openPopup('./TCL_hindi_HD.m3u8')">
+                <img src="https://m.media-amazon.com/images/G/01/digital/video/merch/subs/benefit-id/s-z/tlc/heroes/featured-offer-tile_1920x1080._UR1920,1080_SX1440_FMjpg_.jpg"
+                    alt="TV Channel Logo">
+                <div class="post-content">
+                    <p>TLC hindi HD</p>
+                </div>
+            </div>
+            <div class="post" onclick="openPopup('Animal_planet_hindi_HD.m3u8')">
+                <img src="https://i.vimeocdn.com/video/743208338-0c9bce18370b30386d37e406ac3e949b2e09db1200832d0cd68a6ac2ed849648-d_750x421.875?q=60"
+                    alt="TV Channel Logo">
+                <div class="post-content">
+                    <p>Animal planet HD</p>
+                </div>
+            </div>
+            <div class="post" onclick="openPopup('Animal_planet_hindi_HD.m3u8')">
+                <img src="https://i.vimeocdn.com/video/743208338-0c9bce18370b30386d37e406ac3e949b2e09db1200832d0cd68a6ac2ed849648-d_750x421.875?q=60"
+                    alt="TV Channel Logo">
+                <div class="post-content">
+                    <p>Animal planet HD</p>
+                </div>
+            </div>
+            <div class="post" onclick="openPopup('Animal_planet_hindi_HD.m3u8')">
+                <img src="https://i.vimeocdn.com/video/743208338-0c9bce18370b30386d37e406ac3e949b2e09db1200832d0cd68a6ac2ed849648-d_750x421.875?q=60"
+                    alt="TV Channel Logo">
+                <div class="post-content">
+                    <p>Animal planet HD</p>
+                </div>
+            </div>
+
+            <div class="post" onclick="openPopup('Animal_planet_hindi_HD.m3u8')">
+                <img src="https://i.vimeocdn.com/video/743208338-0c9bce18370b30386d37e406ac3e949b2e09db1200832d0cd68a6ac2ed849648-d_750x421.875?q=60"
+                    alt="TV Channel Logo">
+                <div class="post-content">
+                    <p>Animal planet HD</p>
+                </div>
+            </div>
+            <div class="post" onclick="openPopup('Animal_planet_hindi_HD.m3u8')">
+                <img src="https://i.vimeocdn.com/video/743208338-0c9bce18370b30386d37e406ac3e949b2e09db1200832d0cd68a6ac2ed849648-d_750x421.875?q=60"
+                    alt="TV Channel Logo">
+                <div class="post-content">
+                    <p>Animal planet HD</p>
+                </div>
+            </div>
+            <div class="post" onclick="openPopup('Animal_planet_hindi_HD.m3u8')">
+                <img src="https://i.vimeocdn.com/video/743208338-0c9bce18370b30386d37e406ac3e949b2e09db1200832d0cd68a6ac2ed849648-d_750x421.875?q=60"
+                    alt="TV Channel Logo">
+                <div class="post-content">
+                    <p>Animal planet HD</p>
+                </div>
+            </div>
+            <div class="post" onclick="openPopup('Animal_planet_hindi_HD.m3u8')">
+                <img src="https://i.vimeocdn.com/video/743208338-0c9bce18370b30386d37e406ac3e949b2e09db1200832d0cd68a6ac2ed849648-d_750x421.875?q=60"
+                    alt="TV Channel Logo">
+                <div class="post-content">
+                    <p>Animal planet HD</p>
+                </div>
+            </div>
+
+            <!-- End of post block -->
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Live TV Channel. All rights reserved.</p>
+    </footer>
+    <div class="popup" id="popup">
+        <div class="popup-content">
+            <span class="popup-close" onclick="closePopup()">&times;</span>
+            <video id="videoPlayer" controls autoplay></video>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script>
+        function openPopup(m3u8Url) {
+            document.getElementById('popup').style.display = 'flex';
+            var video = document.getElementById('videoPlayer');
+            if (Hls.isSupported()) {
+                var hls = new Hls();
+                hls.loadSource(m3u8Url);
+                hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED, function () {
+                    video.play();
+                });
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = m3u8Url;
+                video.addEventListener('loadedmetadata', function () {
+                    video.play();
+                });
+            }
+        }
+
+        function closePopup() {
+            document.getElementById('popup').style.display = 'none';
+            var video = document.getElementById('videoPlayer');
+            video.pause();
+            video.src = '';
+        }
+    </script>
+    <script src="script.js"></script>
+</body>
+
+</html>
